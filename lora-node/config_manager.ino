@@ -5,9 +5,10 @@ bool loadConfig() {
   
   if (!isConfigured) {
     Serial.println("NVM non configures. Chargement des valeurs par defaut...");
-    config.node_id = 3;
-    strncpy(config.node_name, "NODE", sizeof(config.node_name) - 1);
-    config.node_name[sizeof(config.node_name) - 1] = '\0';
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    config.node_id = (mac[5] % 15) + 1; // ID unique automatique entre 1 et 15
+    snprintf(config.node_name, sizeof(config.node_name), "NODE-%02X", mac[5]);
     config.lora_freq = 433.0f;
     config.lora_bw = 125.0f;
     config.lora_sf = 9;

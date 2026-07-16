@@ -1,4 +1,4 @@
-# ESP32 LoRa Gateway & Configurable Sensor Nodes System
+# LoRa Home Gateway
 
 An end-to-end telemetry system featuring a modular **ESP32-C6 Web Gateway** and configurable **ESP32-C3 Sensor Client Nodes** transmitting encrypted data using **LoRa (433 MHz)** and **AES-128 GCM** security. 
 
@@ -16,23 +16,6 @@ The gateway exports **Prometheus metrics** (`/metrics`) for Grafana visualizatio
 ---
 
 ## System Architecture
-
-```mermaid
-graph TD
-    subgraph "Sensor Node (ESP32-C3)"
-        A1["Sensors: AHT20 / BMP280 / TSL2561"] --> A2["Encrypt AES-128 GCM"]
-        A2 --> A3["Transmit LoRa Packet"]
-    end
-    
-    subgraph "Gateway (ESP32-C6)"
-        B1["Receive LoRa Packet"] --> B2["Decrypt AES-128 GCM"]
-        B2 --> B3["Expose Prometheus Metrics (/metrics)"]
-        B2 --> B4["Serve Web Dashboard & BLE Config Portal"]
-    end
-
-    A3 -->|433 MHz LoRa| B1
-    C["User Browser / Local Dashboard"] -->|Web Bluetooth BLE| D["Node / Gateway Config Modes"]
-```
 
 ### 1. Gateway (`lora-gw`)
 Acts as the central receiver, decryptor, and metrics exporter.
