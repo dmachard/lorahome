@@ -1,3 +1,10 @@
+const char* getRssiBars(float rssi) {
+  if (rssi >= -85.0f) return "....";
+  if (rssi >= -95.0f) return "...";
+  if (rssi >= -108.0f) return "..";
+  return ".";
+}
+
 void changePage() {
   int active_count = 0;
   for (int i = 0; i < MAX_NODES; i++) {
@@ -282,5 +289,20 @@ void handleDisplayRefresh() {
   if (millis() - last_display_update >= update_interval) {
     last_display_update = millis();
     updateDisplay();
+  }
+}
+
+void initDisplay() {
+  Wire.begin(I2C_SDA, I2C_SCL);
+  if (display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    oled_initialized = true;
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("LoRa Gateway Init...");
+    display.display();
+  } else {
+    Serial.println("SSD1306 allocation failed");
   }
 }

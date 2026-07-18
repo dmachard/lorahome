@@ -82,3 +82,21 @@ void saveConfig(const JsonDocument &doc) {
   prefs.end();
   Serial.println("New configuration saved to NVM!");
 }
+
+bool checkConfigMode() {
+  loadConfig();
+
+  prefs.begin("gw_cfg", false);
+  bool configured = prefs.getBool("configured", false);
+  prefs.end();
+
+  delay(100);
+  bool bootButtonPressed = (digitalRead(BUTTON_PIN) == LOW);
+
+  if (!configured || bootButtonPressed) {
+    inConfigMode = true;
+    setupBLE(configured);
+    return true;
+  }
+  return false;
+}

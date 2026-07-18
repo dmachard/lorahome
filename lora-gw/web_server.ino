@@ -1,3 +1,10 @@
+#include "index_html.h"
+#include "admin_html.h"
+#include "update_html.h"
+#include <WebServer.h>
+#include <Update.h>
+#include <ArduinoJson.h>
+
 void handleMetrics() {
   String out;
   out.reserve(2048);

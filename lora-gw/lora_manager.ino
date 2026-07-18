@@ -1,3 +1,7 @@
+SX1262 radio = new Module(LORA_CS, LORA_DIO1, LORA_RST, LORA_BUSY);
+volatile bool rxFlag = false;
+void IRAM_ATTR onReceive() { rxFlag = true; }
+
 bool gcm_decrypt(const uint8_t *frame, uint8_t frame_len, uint8_t *payload,
                  uint8_t payload_size) {
   if (frame_len < HDR_SIZE + TAG_SIZE)
@@ -148,5 +152,35 @@ void processLoRaPacket() {
 
   last_active_node_id = node_id;
   updateDisplay();
+  radio.startReceive();
+}
+
+void initLoRa() {
+  if (oled_initialized) {
+    display.println("Init LoRa Radio...");
+    display.display();
+  }
+
+  SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+
+  int state = radio.begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC,
+                          LORA_POWER, LORA_PREAMBLE);
+  if (state != RADIOLIB_ERR_NONE) {
+    Serial.printf("Init failed: %d\n", state);
+    if (oled_initialized) {
+      display.println("LoRa Radio: FAILED!");
+      display.printf("Error code: %d\n", state);
+      display.display();
+    }
+    while (true)
+      delay(1000);
+  }
+
+  if (oled_initialized) {
+    display.println("LoRa Radio: OK");
+    display.display();
+  }
+
+  radio.setDio1Action(onReceive);
   radio.startReceive();
 }
