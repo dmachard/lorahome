@@ -8,6 +8,7 @@
 struct NodeData {
   char name[9]; // Local name with trailing \0
   uint32_t seq;
+  uint32_t last_random_id;
   uint32_t last_seen_ms;
   uint32_t packets_count;
   uint32_t auth_failures;

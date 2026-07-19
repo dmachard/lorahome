@@ -4,12 +4,13 @@ An end-to-end telemetry system featuring a modular **ESP32-C6 Web Gateway** and 
 
 The gateway exports **Prometheus metrics** (`/metrics`) for Grafana visualization and hosts a local configuration and diagnostic dashboard. Both devices store credentials and configuration parameters dynamically inside their **Non-Volatile Memory (NVM)** and support **Web Bluetooth (BLE) provisioning** directly from the local dashboard.
 
-![LoRa Gateway Dashboard](docs/imgs/webinterface.png)
+![LoRa Gateway Dashboard](doc/imgs/webinterface.png)
 
 This project is designed to occupy the sweet spot between simple "proof-of-concept" LoRa examples and heavy-duty industrial LoRaWAN deployments:
 
 * **Beyond Basic DIY:** Standard DIY LoRa projects are often insecure (transmitting data in clear text), hardcode credentials into the firmware, lack runtime management interfaces, and omit telemetry monitoring.
 * **Lighter than LoRaWAN:** Full LoRaWAN infrastructures (using gateways and network servers like TTN or ChirpStack) offer professional routing and multi-channel collision avoidance, but they introduce steep setup overhead and require costly multi-channel gateway hardware.
+* **Home Automation Tailored:** Uses a single-channel SX1262 gateway and a shared network AES-128 GCM key for effortless home deployment without managing complex multi-channel hardware or per-node key registries.
 
 ---
 
@@ -20,28 +21,9 @@ This project is designed to occupy the sweet spot between simple "proof-of-conce
 
 ---
 
-## System Architecture
-
-### 1. Gateway (`lora-gw`)
-Acts as the central receiver, decryptor, and metrics exporter.
-*   **MCU:** ESP32-C6
-*   **LoRa Transceiver:** SX1262
-*   **OLED Display:** SSD1306 (128x64) displaying system status and BLE config options.
-*   **NVM Configs:** Persistent storage for Wi-Fi SSID/password, IP address (static IP support), and AES keys.
-*   **Provisioning:** Forced BLE config mode if NVM is uninitialized or when the `BOOT` button (GPIO 9) is held on startup.
-
-### 2. Client Node (`lora-node`)
-Telemetry node reading environmental sensors and sending GCM-encrypted payloads.
-*   **MCU:** ESP32-C3
-*   **LoRa Transceiver:** SX1278
-*   **Sensors Support:** AHT20 (temp/humidity), BMP280 (temp/pressure), TSL2561 (light).
-*   **NVM Configs:** Persistent storage for Node ID, name, tx interval, LoRa frequency, bandwidth, spreading factor, coding rate, preamble, sync word, and AES key.
-*   **Provisioning:** Enters BLE config mode for 60 seconds on boot (or via `BOOT` button), then transitions to normal telemetry transmission.
-
----
-
 ## Documentation
 
+*   [**System Architecture**](./doc/architecture.md): High-level system overview, component breakdowns (ESP32-C6 gateway, ESP32-C3 node), and pipeline descriptions.
 *   [**Protocol Specification**](./doc/protocol.md): Binary frame format, `SensorPayload` structure, sensor type IDs, and value scaling rules.
 *   [**Security Model**](./doc/security.md): AES-128 GCM details, IV construction, replay protection, and BLE provisioning flow.
 

@@ -1,13 +1,13 @@
-// --- CHARGEMENT / SAUVEGARDE CONFIG NVM ---
+// --- NVM CONFIG LOAD / SAVE ---
 bool loadConfig() {
   prefs.begin("lora_cfg", false);
   bool isConfigured = prefs.getBool("configured", false);
-  
+
   if (!isConfigured) {
-    Serial.println("NVM non configures. Chargement des valeurs par defaut...");
+    Serial.println("NVM unconfigured. Loading default values...");
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_WIFI_STA);
-    config.node_id = (mac[5] % 15) + 1; // ID unique automatique entre 1 et 15
+    config.node_id = (mac[5] % 15) + 1; // Automatic unique ID between 1 and 15
     snprintf(config.node_name, sizeof(config.node_name), "NODE-%02X", mac[5]);
     config.lora_freq = 433.0f;
     config.lora_bw = 125.0f;
@@ -19,7 +19,7 @@ bool loadConfig() {
     memset(config.aes_key, 0, 16);
     config.tx_interval = 60;
   } else {
-    Serial.println("Configuration NVM chargee !");
+    Serial.println("NVM configuration loaded!");
     config.node_id = prefs.getUChar("node_id", 3);
     prefs.getString("node_name", "NODE").toCharArray(config.node_name, sizeof(config.node_name));
     config.lora_freq = prefs.getFloat("lora_freq", 433.0f);
@@ -32,18 +32,18 @@ bool loadConfig() {
     prefs.getBytes("aes_key", config.aes_key, 16);
     config.tx_interval = prefs.getUShort("tx_interval", 60);
   }
-  
+
   prefs.end();
-  
-  Serial.printf("Config: ID=%d, Nom=%s, Freq=%.2f, SF=%d, BW=%.1f\n", 
+
+  Serial.printf("Config: ID=%d, Name=%s, Freq=%.2f, SF=%d, BW=%.1f\n",
                 config.node_id, config.node_name, config.lora_freq, config.lora_sf, config.lora_bw);
-                
+
   return isConfigured;
 }
 
 void saveConfig(const JsonDocument &doc) {
   prefs.begin("lora_cfg", false);
-  
+
   if (doc.containsKey("node_id")) prefs.putUChar("node_id", doc["node_id"].as<uint8_t>());
   if (doc.containsKey("node_name")) prefs.putString("node_name", doc["node_name"].as<const char*>());
   if (doc.containsKey("lora_freq")) prefs.putFloat("lora_freq", doc["lora_freq"].as<float>());
@@ -54,7 +54,7 @@ void saveConfig(const JsonDocument &doc) {
   if (doc.containsKey("lora_power")) prefs.putChar("lora_power", doc["lora_power"].as<int8_t>());
   if (doc.containsKey("lora_preamble")) prefs.putUShort("lora_preamble", doc["lora_preamble"].as<uint16_t>());
   if (doc.containsKey("tx_interval")) prefs.putUShort("tx_interval", doc["tx_interval"].as<uint16_t>());
-  
+
   if (doc.containsKey("aes_key")) {
     String hexKey = doc["aes_key"].as<String>();
     uint8_t keyBytes[16] = {0};
@@ -63,10 +63,10 @@ void saveConfig(const JsonDocument &doc) {
       keyBytes[i] = strtol(byteStr.c_str(), NULL, 16);
     }
     prefs.putBytes("aes_key", keyBytes, 16);
-    Serial.println("Nouvelle cle AES enregistree.");
+    Serial.println("New AES key saved.");
   }
-  
+
   prefs.putBool("configured", true);
   prefs.end();
-  Serial.println("Configuration enregistree dans la NVM.");
+  Serial.println("Configuration saved to NVM.");
 }
