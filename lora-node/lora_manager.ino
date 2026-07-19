@@ -1,30 +1,30 @@
-// Structures et constantes pour les messages LoRa
+// LoRa transmission structures and constants
 #define HDR_SIZE 9
 #define TAG_SIZE 8
 
 #include "shared_protocol.h"
 
 void startLoRaMode() {
-  Serial.println("--- DÉMARRAGE MODE LORA NORMAL ---");
-  
+  Serial.println("--- STARTING NORMAL LORA MODE ---");
+
   if (LED_PIN >= 0) {
     pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, HIGH); // Éteint la LED
+    digitalWrite(LED_PIN, HIGH); // Turn LED off
   }
-  
+
   esp_task_wdt_config_t wdt_config = {.timeout_ms = WDT_TIMEOUT_S * 1000,
                                       .idle_core_mask = 0,
                                       .trigger_panic = true};
   esp_task_wdt_reconfigure(&wdt_config);
   esp_task_wdt_add(NULL);
 
-  // Initialise uniquement les capteurs I2C détectés lors du scan de setup
+  // Initialize only the I2C sensors detected during setup scan
   if (aht_detected) {
     aht = new Adafruit_AHTX0();
     if (aht->begin()) {
-      Serial.println("Capteur AHT20 initialise avec succes !");
+      Serial.println("AHT20 sensor initialized successfully!");
     } else {
-      Serial.println("Erreur d'initialisation de l'AHT20 !");
+      Serial.println("AHT20 initialization failed!");
       aht_detected = false;
       delete aht;
       aht = nullptr;
@@ -34,9 +34,9 @@ void startLoRaMode() {
   if (bmp_detected) {
     bmp = new Adafruit_BMP280();
     if (bmp->begin(bmp_addr)) {
-      Serial.println("Capteur BMP280 initialise avec succes !");
+      Serial.println("BMP280 sensor initialized successfully!");
     } else {
-      Serial.println("Erreur d'initialisation du BMP280 !");
+      Serial.println("BMP280 initialization failed!");
       bmp_detected = false;
       delete bmp;
       bmp = nullptr;
@@ -46,11 +46,11 @@ void startLoRaMode() {
   if (tsl_detected) {
     tsl = new Adafruit_TSL2561_Unified(tsl_addr, 12345);
     if (tsl->begin()) {
-      Serial.println("Capteur TSL2561 initialise avec succes !");
+      Serial.println("TSL2561 sensor initialized successfully!");
       tsl->enableAutoRange(true);
       tsl->setIntegrationTime(TSL2561_INTEGRATIONTIME_13MS);
     } else {
-      Serial.println("Erreur d'initialisation du TSL2561 !");
+      Serial.println("TSL2561 initialization failed!");
       tsl_detected = false;
       delete tsl;
       tsl = nullptr;
@@ -58,17 +58,17 @@ void startLoRaMode() {
   }
 
   SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI, 10);
-  
+
   radio = new SX1278(new Module(10, 1, 0, -1));
-  
-  Serial.println("Initialisation du module SX1278...");
-  int state = radio->begin(config.lora_freq, config.lora_bw, config.lora_sf, 
-                          config.lora_cr, config.lora_sync, config.lora_power, 
-                          config.lora_preamble);
+
+  Serial.println("Initializing SX1278 module...");
+  int state = radio->begin(config.lora_freq, config.lora_bw, config.lora_sf,
+                           config.lora_cr, config.lora_sync, config.lora_power,
+                           config.lora_preamble);
   if (state == RADIOLIB_ERR_NONE) {
-    Serial.println("SX1278 initialise avec succes !");
+    Serial.println("SX1278 initialized successfully!");
   } else {
-    Serial.printf("Echec de l'initialisation du SX1278. Code erreur: %d\n", state);
+    Serial.printf("SX1278 initialization failed. Error code: %d\n", state);
     while (true) {
       esp_task_wdt_reset();
       delay(1000);
@@ -83,14 +83,14 @@ void loopLoRa() {
   memset(&payload, 0, sizeof(payload));
   payload.count = 0;
 
-  // 1. Lecture AHT20
+  // 1. Read AHT20
   if (aht_detected && aht != nullptr) {
     sensors_event_t humidity_event, temp_event;
     if (aht->getEvent(&humidity_event, &temp_event)) {
       float t = temp_event.temperature;
       float h = humidity_event.relative_humidity;
       Serial.printf("AHT20: T=%.2f°C | H=%.2f%%\n", t, h);
-      
+
       payload.readings[payload.count].type = TYPE_AHT20_TEMP;
       payload.readings[payload.count].value = (int32_t)(t * 100);
       payload.count++;
@@ -99,33 +99,33 @@ void loopLoRa() {
       payload.readings[payload.count].value = (int32_t)(h * 100);
       payload.count++;
     } else {
-      Serial.println("Echec de lecture AHT20");
+      Serial.println("AHT20 read failed");
     }
   }
 
-  // 2. Lecture BMP280
+  // 2. Read BMP280
   if (bmp_detected && bmp != nullptr) {
     float t = bmp->readTemperature();
     float p = bmp->readPressure();
     Serial.printf("BMP280: T=%.2f°C | P=%.1fhPa\n", t, p / 100.0f);
-    
+
     payload.readings[payload.count].type = TYPE_BMP280_PRES;
-    payload.readings[payload.count].value = (int32_t)(p / 10.0f); // Pression en dixièmes de hPa (ou Pa / 10)
+    payload.readings[payload.count].value = (int32_t)(p / 10.0f); // Pressure in tenths of hPa (Pa / 10)
     payload.count++;
   }
 
-  // 3. Lecture TSL2561
+  // 3. Read TSL2561
   if (tsl_detected && tsl != nullptr) {
     sensors_event_t event;
     if (tsl->getEvent(&event)) {
       float lux = event.light;
       Serial.printf("TSL2561: L=%.1flux\n", lux);
-      
+
       payload.readings[payload.count].type = TYPE_BH1750_LUX;
       payload.readings[payload.count].value = (int32_t)lux;
       payload.count++;
     } else {
-      Serial.println("Echec de lecture TSL2561");
+      Serial.println("TSL2561 read failed");
     }
   }
 
@@ -137,16 +137,16 @@ void loopLoRa() {
 
   uint8_t frame[64];
   uint8_t iv[12] = {0};
-  
+
   frame[0] = config.node_id;
   frame[1] = (seq >> 24) & 0xFF;
   frame[2] = (seq >> 16) & 0xFF;
-  frame[3] = (seq >> 8) & 0xFF;
-  frame[4] = (seq) & 0xFF;
+  frame[3] = (seq >> 8)  & 0xFF;
+  frame[4] = (seq)       & 0xFF;
   frame[5] = (node_random_id >> 24) & 0xFF;
   frame[6] = (node_random_id >> 16) & 0xFF;
-  frame[7] = (node_random_id >> 8) & 0xFF;
-  frame[8] = (node_random_id) & 0xFF;
+  frame[7] = (node_random_id >> 8)  & 0xFF;
+  frame[8] = (node_random_id)       & 0xFF;
 
   memcpy(iv, frame, 9);
 
@@ -162,37 +162,37 @@ void loopLoRa() {
   int state = radio->transmit(frame, len);
 
   if (state == RADIOLIB_ERR_NONE) {
-    Serial.printf("Transmission OK seq=%lu\n", seq++);
+    Serial.printf("TX OK seq=%lu\n", seq++);
     if (current_error_code == ERR_TX_FAILED)
       current_error_code = ERR_NONE;
   } else {
-    Serial.printf("Transmission failed: %d\n", state);
+    Serial.printf("TX failed: %d\n", state);
     current_error_code = ERR_TX_FAILED;
   }
 
-  // Boucle d'attente intelligente qui réagit au bouton BOOT
+  // Smart wait loop that reacts to the BOOT button
   uint32_t iterations = config.tx_interval * 10;
-  if (iterations == 0) iterations = 600; // Sécurité par défaut
-  
+  if (iterations == 0) iterations = 600; // Safety fallback
+
   for (uint32_t i = 0; i < iterations; i++) {
     esp_task_wdt_reset();
-    
-    // Vérifie le bouton BOOT (actif LOW)
+
+    // Check BOOT button (active LOW)
     if (digitalRead(BUTTON_PIN) == LOW) {
-      delay(50); // Anti-rebond
+      delay(50); // Debounce
       if (digitalRead(BUTTON_PIN) == LOW) {
-        Serial.println("Bouton BOOT pressé ! Enregistrement flag force_config et redémarrage pour configuration BLE...");
-        
-        // Enregistre l'intention d'entrer en mode config après le reboot
+        Serial.println("BOOT button pressed! Saving force_config flag and rebooting for BLE configuration...");
+
+        // Save the intent to enter config mode after reboot
         prefs.begin("lora_cfg", false);
         prefs.putBool("force_config", true);
         prefs.end();
-        
+
         delay(500);
         ESP.restart();
       }
     }
-    
+
     delay(100);
   }
 }
