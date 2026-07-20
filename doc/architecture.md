@@ -1,6 +1,6 @@
 # System Architecture
 
-This document presents the detailed system architecture of the LoRa Home Gateway and Client Nodes ecosystem.
+This document presents the detailed system architecture of the **LoRa Home Gateway and Client Nodes** ecosystem.
 
 ---
 
@@ -9,18 +9,18 @@ This document presents the detailed system architecture of the LoRa Home Gateway
 The system operates as a single-channel, encrypted local LoRa telemetry network, bridging low-power sensor nodes to IP networks and monitoring platforms.
 
 ```
-+--------------------+               +-----------------------+               +----------------------+
-|  ESP32-C3 Node     |  Encrypted    |   ESP32-C6 Gateway    |  HTTP/JSON    | Prometheus / Grafana |
-| (AHT20/BMP280/etc) | ------------> | (SX1262 + Web Server) | ------------> |   /metrics Endpoint  |
-+--------------------+  LoRa 433MHz  +-----------------------+               +----------------------+
-          ^                                      ^
-          | BLE Provisioning                     | BLE / Web Config
-          +------------------+   +---------------+
-                             |   |
-                       +---------------+
-                       | Web Browser   |
-                       | (Dashboard)   |
-                       +---------------+
++--------------------------+               +----------------------------+               +----------------------+
+|  ESP32-C3 Node           |  Encrypted    |   ESP32-C6 Gateway         |  HTTP/JSON    | Prometheus / Grafana |
+| (SX1262/SX1278 + Sensors)| ------------> | (SX1262/SX1278 + Web Srv) | ------------> |   /metrics Endpoint  |
++--------------------------+  LoRa 433MHz  +----------------------------+               +----------------------+
+             ^                                           ^
+             | BLE Provisioning                          | BLE / Web Config
+             +--------------------+   +------------------+
+                                  |   |
+                            +---------------+
+                            | Web Browser   |
+                            | (Dashboard)   |
+                            +---------------+
 ```
 
 ---
@@ -30,9 +30,9 @@ The system operates as a single-channel, encrypted local LoRa telemetry network,
 The Gateway acts as the central receiver, decryptor, web host, and telemetry exporter.
 
 * **Microcontroller (MCU):** ESP32-C6
-* **LoRa Transceiver:** SX1262
+* **Multi-Radio Hardware Support:** Dynamic runtime support for **SX1262** or **SX1278** transceivers (selectable via Web/BLE UI).
 * **OLED Display:** SSD1306 (128x64 I2C) displaying real-time reception status, WiFi state, and BLE provisioning indicator.
-* **Persistent Storage (NVM):** Non-Volatile Memory (Preferences) stores WiFi SSID/password, Admin password, static IP settings, and shared AES key.
+* **Persistent Storage (NVM):** Non-Volatile Memory (Preferences) stores WiFi credentials, Admin password, static IP settings, selected radio chip, and shared AES key.
 * **Web & Metrics Server:**
   * Serves embedded minified Web UI (`index.html`, `admin.html`, `update.html`).
   * Exposes JSON API (`/api/nodes`, `/api/gw_config`).
@@ -47,15 +47,18 @@ The Gateway acts as the central receiver, decryptor, web host, and telemetry exp
 
 The client node reads environmental sensors, encrypts the payload, and transmits data periodically over LoRa.
 
-* **Microcontroller (MCU):** ESP32-C3
-* **LoRa Transceiver:** SX1278
-* **Sensor Compatibility:**
-  * **AHT20:** Temperature & Relative Humidity
-  * **BMP280:** Temperature & Barometric Pressure
+* **Microcontroller (MCU):** ESP32-C3 (e.g. SuperMini or Seeed Studio XIAO ESP32-C3)
+* **Multi-Radio Hardware Support:** Dynamic runtime switching between **SX1262** and **SX1278** transceivers stored in NVM.
+* **Auto-Detected Sensor Compatibility:**
+  * **AHT20:** Temperature (°C) & Relative Humidity (%)
+  * **BMP280:** Temperature (°C) & Barometric Pressure (hPa)
   * **TSL2561 / BH1750:** Ambient Light Intensity (Lux)
-* **Persistent Storage (NVM):** Stores Node ID, node name, transmission interval, LoRa RF configuration (frequency, bandwidth, spreading factor, coding rate, preamble, sync word), and AES-128 key.
+  * **SCD41 / SCD40:** Photoacoustic CO₂ Concentration (ppm), Temperature (°C) & Humidity (%)
+  * **DHT22 / AM2302:** Temperature (°C) & Humidity (%)
+  * **Battery Voltage:** Supply voltage in mV via Analog ADC
+* **Persistent Storage (NVM):** Stores Node ID, node name, transmission interval, LoRa RF configuration (frequency, bandwidth, spreading factor, coding rate, preamble, sync word, chip selection), and AES-128 key.
 * **Operating Modes:**
-  * **Provisioning Mode (BLE):** Starts BLE server for 60 seconds on boot (or triggered via BOOT button) to allow wireless provisioning of parameters and wireless OTA firmware updates.
+  * **Provisioning Mode (BLE):** Starts BLE server for 60 seconds on boot (or triggered via BOOT button / radio error fallback) to allow wireless provisioning of parameters and wireless OTA firmware updates.
   * **Normal Telemetry Mode:** Enters low-power execution loop, reads sensors, constructs packed `SensorPayload`, encrypts frame via AES-128-GCM, transmits packet, and waits for next cycle.
 
 ---
