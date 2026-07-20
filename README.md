@@ -21,7 +21,6 @@ The gateway exports **Prometheus metrics** (`/metrics`) for Grafana visualizatio
 | **AHT20** | Temperature & Relative Humidity | °C, % RH |
 | **BMP280** | Temperature & Barometric Pressure | °C, hPa |
 | **TSL2561** | Ambient Light Intensity | Lux |
-| **BH1750** | Ambient Light Intensity | Lux |
 | **SCD41 / SCD40** | Photoacoustic CO₂ Concentration, Temp & Humidity | ppm, °C, % |
 
 ---

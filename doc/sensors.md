@@ -10,8 +10,7 @@ The **LoRa Home Gateway & Node** ecosystem features plug-and-play **automatic I2
 |---|---|---|---|---|---|
 | **AHT20** | Temperature, Relative Humidity | -40°C to +85°C (±0.3°C)<br>0% to 100% RH (±2%) | I2C | `0x38` | `3` (`TYPE_AHT20_TEMP`)<br>`4` (`TYPE_AHT20_HUM`) |
 | **BMP280** | Atmospheric Pressure, Temperature | 300 to 1100 hPa (±1 hPa)<br>-40°C to +85°C (±1°C) | I2C | `0x76` or `0x77` | `5` (`TYPE_BMP280_TEMP`)<br>`6` (`TYPE_BMP280_PRES`) |
-| **TSL2561** | Ambient Light Intensity | 0.1 to 40,000+ Lux | I2C | `0x39`, `0x29`, `0x49` | `7` (`TYPE_BH1750_LUX`) |
-| **BH1750** | Ambient Light Intensity | 1 to 65,535 Lux | I2C | `0x23` or `0x5C` | `7` (`TYPE_BH1750_LUX`) |
+| **TSL2561** | Ambient Light Intensity | 0.1 to 40,000+ Lux | I2C | `0x39`, `0x29`, `0x49` | `7` (`TYPE_TSL2561_LUX`) |
 | **SCD41 / SCD40** | Photoacoustic CO₂ Concentration, Temperature, Humidity | 400 to 5,000+ ppm (±40 ppm + 5%) | I2C | `0x62` | `9` (`TYPE_SCD40_CO2`) |
 
 ---

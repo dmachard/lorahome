@@ -52,7 +52,7 @@ The client node reads environmental sensors, encrypts the payload, and transmits
 * **Auto-Detected Sensor Compatibility:**
   * **AHT20:** Temperature (°C) & Relative Humidity (%)
   * **BMP280:** Temperature (°C) & Barometric Pressure (hPa)
-  * **TSL2561 / BH1750:** Ambient Light Intensity (Lux)
+  * **TSL2561:** Ambient Light Intensity (Lux)
   * **SCD41 / SCD40:** Photoacoustic CO₂ Concentration (ppm), Temperature (°C) & Humidity (%)
 * **Persistent Storage (NVM):** Stores Node ID, node name, transmission interval, LoRa RF configuration (frequency, bandwidth, spreading factor, coding rate, preamble, sync word, chip selection), and AES-128 key.
 * **Operating Modes:**

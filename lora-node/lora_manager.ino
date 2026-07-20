@@ -164,7 +164,7 @@ void loopLoRa() {
       float lux = event.light;
       Serial.printf("TSL2561: L=%.1flux\n", lux);
 
-      payload.readings[payload.count].type = TYPE_BH1750_LUX;
+      payload.readings[payload.count].type = TYPE_TSL2561_LUX;
       payload.readings[payload.count].value = (int32_t)lux;
       payload.count++;
     } else {

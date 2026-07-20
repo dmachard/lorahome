@@ -8,7 +8,7 @@ enum ReadingType {
   TYPE_AHT20_HUM   = 4,
   TYPE_BMP280_TEMP = 5,
   TYPE_BMP280_PRES = 6,
-  TYPE_BH1750_LUX  = 7,
+  TYPE_TSL2561_LUX = 7,
   TYPE_SCD40_CO2   = 9
 };
 
@@ -40,7 +40,7 @@ inline ReadingTypeDefinition getReadingDefinition(uint8_t type) {
     case TYPE_AHT20_HUM:   return {4, "humidity_percent", "Humidity", "%", 0.01f};
     case TYPE_BMP280_TEMP: return {5, "temperature_celsius", "Temperature", "°C", 0.01f};
     case TYPE_BMP280_PRES: return {6, "pressure_hpa", "Pressure", "hPa", 0.1f};
-    case TYPE_BH1750_LUX:  return {7, "light_lux", "Light", "lux", 1.0f};
+    case TYPE_TSL2561_LUX: return {7, "light_lux", "Light", "lux", 1.0f};
     case TYPE_SCD40_CO2:   return {9, "co2_ppm", "CO2", "ppm", 1.0f};
     default:               return {type, "unknown_raw", "Unk", "", 1.0f};
   }

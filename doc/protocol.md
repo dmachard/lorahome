@@ -74,7 +74,7 @@ Reading types are standardized via the following enumeration:
 | `4` | `TYPE_AHT20_HUM` | AHT20 | Humidity | raw / 100.0f (%) |
 | `5` | `TYPE_BMP280_TEMP` | BMP280 | Temperature | raw / 100.0f (°C) |
 | `6` | `TYPE_BMP280_PRES` | BMP280 | Atmospheric Pressure | raw / 10.0f (hPa) |
-| `7` | `TYPE_BH1750_LUX` | BH1750 | Light Intensity | raw (Lux) |
+| `7` | `TYPE_TSL2561_LUX` | TSL2561 | Light Intensity | raw (Lux) |
 | `9` | `TYPE_SCD40_CO2` | SCD40/SCD41 | CO2 Concentration | raw (ppm) |
 
 ---
