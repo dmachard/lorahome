@@ -30,8 +30,19 @@
 
       <div class="grid" id="nodes-container">
         <div class="stat-card scanning-card">
-          <div class="pulse-ring"></div>
-          Searching for LoRa signals...
+          <div class="radio-scanner">
+            <svg class="radio-tower-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path class="wave wave-1" d="M16.24 7.76a6 6 0 0 1 0 8.49"/>
+              <path class="wave wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <path class="wave wave-1" d="M7.76 16.24a6 6 0 0 1 0-8.49"/>
+              <path class="wave wave-2" d="M4.93 19.07a10 10 0 0 1 0-14.14"/>
+              <line x1="12" y1="12" x2="12" y2="21"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <div class="scanning-text">
+            Searching for LoRa signals
+          </div>
         </div>
       </div>
     </div>
@@ -161,21 +172,29 @@
         if (!data.nodes || data.nodes.length === 0) {
           nodesContainer.innerHTML = `
             <div class="stat-card scanning-card">
-              <div class="radar-container">
-                <div class="radar-circle circle-1"></div>
-                <div class="radar-circle circle-2"></div>
-                <div class="radar-circle circle-3"></div>
-                <svg class="radar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
-                  <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+              <div class="radio-scanner">
+                <svg class="radio-tower-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path class="wave wave-1" d="M16.24 7.76a6 6 0 0 1 0 8.49"/>
+                  <path class="wave wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                  <path class="wave wave-1" d="M7.76 16.24a6 6 0 0 1 0-8.49"/>
+                  <path class="wave wave-2" d="M4.93 19.07a10 10 0 0 1 0-14.14"/>
+                  <line x1="12" y1="12" x2="12" y2="21"/>
+                  <circle cx="12" cy="12" r="2"/>
                 </svg>
               </div>
               <div class="scanning-text">
-                <span>Searching for LoRa signals</span><span class="scanning-dots"></span>
+                Searching for LoRa signals
               </div>
             </div>`;
           return;
-        } let html = '';
+        }
+
+        // Remove scanning indicator if nodes are present
+        const scanningCard = nodesContainer.querySelector('.scanning-card');
+        if (scanningCard) {
+          nodesContainer.innerHTML = '';
+        }
+
         const themes = [
           { // Violet
             primary: '#a78bfa',
