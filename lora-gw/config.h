@@ -56,9 +56,4 @@
 #define TAG_SIZE 8
 #define HDR_SIZE 9 // node_id(1) + seq(4) + random_id(4)
 
-// ==========================================
-// MONITORING CONFIGURATION
-// ==========================================
-#define WINDOW_MS 300000UL
-
 #endif // CONFIG_H

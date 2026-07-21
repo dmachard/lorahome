@@ -11,14 +11,11 @@ struct NodeData {
   uint32_t last_random_id;
   uint32_t last_seen_ms;
   uint32_t packets_count;
+  uint32_t packets_lost;
   uint32_t auth_failures;
   uint32_t reboots;
-  uint32_t window_seq_start;
-  uint32_t window_received;
-  uint32_t window_start_ms;
   float rssi;
   float snr;
-  float loss_percent;
   uint8_t last_reset_reason;
   uint8_t last_error_code;
   uint16_t tx_interval;

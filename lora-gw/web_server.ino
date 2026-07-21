@@ -16,8 +16,6 @@ void handleMetrics() {
   out += "# TYPE lora_last_seen_seconds gauge\n";
   out += "# HELP lora_packet_seq Last sequence number\n";
   out += "# TYPE lora_packet_seq counter\n";
-  out += "# HELP lora_packet_loss_percent Packet loss over last window\n";
-  out += "# TYPE lora_packet_loss_percent gauge\n";
   out += "# HELP lora_auth_failures Total authentication failures\n";
   out += "# TYPE lora_auth_failures counter\n";
   out += "# HELP lora_reboots Total node reboots detected\n";
@@ -42,6 +40,9 @@ void handleMetrics() {
   out +=
       "# HELP lora_packets_received_total Total successful packets per node\n";
   out += "# TYPE lora_packets_received_total counter\n";
+  out +=
+      "# HELP lora_packets_lost_total Total lost packets per node\n";
+  out += "# TYPE lora_packets_lost_total counter\n";
 
   uint32_t now = millis();
   for (int i = 0; i < MAX_NODES; i++) {
@@ -65,9 +66,6 @@ void handleMetrics() {
     snprintf(line, sizeof(line), "lora_packet_seq%s %lu\n", label,
              nodes[i].seq);
     out += line;
-    snprintf(line, sizeof(line), "lora_packet_loss_percent%s %.1f\n", label,
-             nodes[i].loss_percent);
-    out += line;
     snprintf(line, sizeof(line), "lora_auth_failures%s %lu\n", label,
              nodes[i].auth_failures);
     out += line;
@@ -76,6 +74,9 @@ void handleMetrics() {
     out += line;
     snprintf(line, sizeof(line), "lora_packets_received_total%s %lu\n", label,
              nodes[i].packets_count);
+    out += line;
+    snprintf(line, sizeof(line), "lora_packets_lost_total%s %lu\n", label,
+             nodes[i].packets_lost);
     out += line;
     snprintf(line, sizeof(line), "lora_node_reset_reason%s %u\n", label,
              nodes[i].last_reset_reason);
@@ -128,8 +129,8 @@ void handleNodesJson() {
     node["rssi"]             = nodes[i].rssi;
     node["snr"]              = nodes[i].snr;
     node["reboots"]          = nodes[i].reboots;
-    node["loss_percent"]     = nodes[i].loss_percent;
     node["packets_count"]    = nodes[i].packets_count;
+    node["packets_lost"]     = nodes[i].packets_lost;
     node["last_reset_reason"]= nodes[i].last_reset_reason;
     node["last_error_code"]  = nodes[i].last_error_code;
     node["tx_interval"]      = nodes[i].tx_interval;

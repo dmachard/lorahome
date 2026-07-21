@@ -230,11 +230,16 @@
           const offlineThreshold = interval * 2.5;
           const hideThreshold = interval * 5;
 
-          if (node.elapsed_sec >= hideThreshold) return; // Hide node if inactive for too long
+          const cardId = `node-card-${node.id}`;
+          let existingCard = document.getElementById(cardId);
+
+          if (node.elapsed_sec >= hideThreshold) {
+            if (existingCard) existingCard.remove();
+            return; // Hide node if inactive for too long
+          }
 
           const isOnline = node.elapsed_sec < offlineThreshold;
           const statusClass = isOnline ? '' : 'offline';
-          const statusText = isOnline ? 'Online' : 'Offline';
           const lastSeenText = isOnline ? node.elapsed_sec + 's ago' : formatUptime(node.elapsed_sec) + ' ago';
 
           let dotClass = '';
@@ -246,7 +251,6 @@
             dotClass = 'offline'; // red (offline / critical silence)
           }
 
-          // Get the theme for this node
           const theme = themes[(node.id || 0) % themes.length];
 
           let readingsHtml = '';
@@ -295,9 +299,7 @@
             });
           }
 
-
-          html += `
-            <div class="node-card ${statusClass}" style="${isOnline ? `--card-border: ${theme.border}; --card-border-hover: ${theme.hoverBorder}; --card-glow: ${theme.glow};` : ''}">
+          const cardInnerHtml = `
               <div class="node-header">
                 <div class="node-title-group">
                   <span class="node-name" style="color: ${isOnline ? theme.primary : '#94a3b8'}; text-shadow: 0 0 10px ${isOnline ? theme.glow : 'transparent'};">${node.name}</span>
@@ -321,7 +323,7 @@
                 </div>
                 <div class="node-footer-right">
                   <div class="footer-metric right-aligned">
-                    <span>Loss: <b style="color: ${node.loss_percent > 0 ? '#ef4444' : '#34d399'}">${node.loss_percent.toFixed(1)}%</b></span>
+                    <span>Lost: <b style="color: ${node.packets_lost > 0 ? '#ef4444' : '#34d399'}">${node.packets_lost || 0}</b></span>
                     <span class="stat-divider">·</span>
                     <span>Rbts: <b style="color: ${node.reboots > 0 ? '#fbbf24' : '#64748b'}">${node.reboots}</b></span>
                   </div>
@@ -330,10 +332,25 @@
                     <span>Seen ${lastSeenText}${node.last_reset_reason !== 0 ? ` · Boot: <span style="color: ${getResetReasonColor(node.last_reset_reason)}; font-weight: 700;">${getResetReasonLabel(node.last_reset_reason)}</span>` : ''}</span>
                   </div>
                 </div>
-              </div>
-            </div>`;
+              </div>`;
+
+          if (existingCard) {
+            existingCard.className = `node-card ${statusClass}`;
+            existingCard.style.cssText = isOnline ? `--card-border: ${theme.border}; --card-border-hover: ${theme.hoverBorder}; --card-glow: ${theme.glow};` : '';
+            if (existingCard.innerHTML !== cardInnerHtml) {
+              existingCard.innerHTML = cardInnerHtml;
+            }
+          } else {
+            const cardEl = document.createElement('div');
+            cardEl.id = cardId;
+            cardEl.className = `node-card ${statusClass}`;
+            if (isOnline) {
+              cardEl.style.cssText = `--card-border: ${theme.border}; --card-border-hover: ${theme.hoverBorder}; --card-glow: ${theme.glow};`;
+            }
+            cardEl.innerHTML = cardInnerHtml;
+            nodesContainer.appendChild(cardEl);
+          }
         });
-        nodesContainer.innerHTML = html;
       } catch (error) {
         console.error('Error fetching data:', error);
       }

@@ -28,27 +28,6 @@ bool gcm_decrypt(const uint8_t *frame, uint8_t frame_len, uint8_t *payload,
   return memcmp(computed_tag, tag, TAG_SIZE) == 0;
 }
 
-void resetWindow(struct NodeData &n, uint32_t seq) {
-  n.window_seq_start = seq;
-  n.window_received = 1;
-  n.window_start_ms = millis();
-  n.loss_percent = 0.0f;
-}
-
-void updateWindow(struct NodeData &n, uint32_t seq) {
-  uint32_t now = millis();
-  if (now - n.window_start_ms >= WINDOW_MS) {
-    uint32_t expected = seq - n.window_seq_start;
-    if (expected > 0) {
-      uint32_t lost = expected - min(n.window_received, expected);
-      n.loss_percent = (lost * 100.0f) / expected;
-    }
-    resetWindow(n, seq);
-    return;
-  }
-  n.window_received++;
-}
-
 void processLoRaPacket() {
   rxFlag = false;
   global_rx_interrupts++;
@@ -118,20 +97,18 @@ void processLoRaPacket() {
       Serial.printf("Node %d | NEW REBOOT SESSION DETECTED (random_id: %08X -> %08X, reason: %d)\n",
                     node_id, n.last_random_id, random_id, current_reset_reason);
       n.reboots++;
-      resetWindow(n, seq);
     } else if (seq < n.seq) {
       Serial.printf("Node %d | WARNING: UNEXPECTED SEQ ROLLBACK (seq %lu < %lu)\n", node_id, seq, n.seq);
       n.reboots++;
-      resetWindow(n, seq);
     } else if (seq == n.seq) {
       // Duplicate packet within the same boot session -> ignore
       radio->startReceive();
       return;
-    } else {
-      updateWindow(n, seq);
+    } else if (seq > n.seq + 1) {
+      uint32_t lost = seq - (n.seq + 1);
+      n.packets_lost += lost;
+      Serial.printf("Node %d | PACKET LOSS DETECTED: %lu packet(s) lost (seq %lu -> %lu)\n", node_id, lost, n.seq, seq);
     }
-  } else {
-    resetWindow(n, seq);
   }
 
   n.seen = true;
