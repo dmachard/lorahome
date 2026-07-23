@@ -53,6 +53,19 @@
 
       <!-- Gateway Configuration Form -->
       <form id="gw-config-form" class="hidden">
+        <div id="gw-loading-banner" class="loading-banner hidden">
+          <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+            <line x1="2" y1="12" x2="6" y2="12"/>
+            <line x1="18" y1="12" x2="22" y2="12"/>
+            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+          </svg>
+          <span>Fetching gateway configuration parameters...</span>
+        </div>
         <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 24px;">
           <!-- WiFi and Auth -->
           <div class="stat-card">
@@ -146,6 +159,19 @@
 
         <!-- Node Configuration Form -->
         <form id="config-form" class="hidden">
+          <div id="node-loading-banner" class="loading-banner hidden">
+            <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="2" x2="12" y2="6"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+              <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+              <line x1="2" y1="12" x2="6" y2="12"/>
+              <line x1="18" y1="12" x2="22" y2="12"/>
+              <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+              <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+            </svg>
+            <span>Connecting & fetching node parameters over Bluetooth...</span>
+          </div>
           <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 24px;">
             <!-- Node Identity Card -->
             <div class="stat-card">
@@ -492,6 +518,11 @@
         document.getElementById('gw_lora_chip').value = json.lora_chip || 2;
         document.getElementById('gw_aes_key').value = json.aes_key || '';
         updateGwStaticFieldsVisibility();
+
+        document.getElementById('gw-loading-banner').classList.add('hidden');
+        gwStatusDot.className = "dot";
+        gwStatusText.innerText = "Connected";
+        gwStatusText.style.color = "#10b981";
       } else if (json.status === 'saved') {
         alert("Configuration saved via BLE! The gateway will reboot.");
       } else if (json.status === 'reseted') {
@@ -504,6 +535,7 @@
       gwStatusText.innerText = "Disconnected";
       gwStatusText.style.color = "#ef4444";
       btnGwConnect.innerText = "Connect to Gateway";
+      document.getElementById('gw-loading-banner').classList.add('hidden');
       if (!isHttpMode) gwConfigForm.classList.add('hidden');
     });
 
@@ -517,11 +549,14 @@
         gwStatusText.innerText = "Searching...";
         gwStatusText.style.color = "#f59e0b";
         await gwPipe.connect("ESP32-LoRa-Gateway");
-        gwStatusDot.className = "dot";
-        gwStatusText.innerText = "Connected";
-        gwStatusText.style.color = "#10b981";
         btnGwConnect.innerText = "Disconnect";
         gwConfigForm.classList.remove('hidden');
+
+        document.getElementById('gw-loading-banner').classList.remove('hidden');
+        gwStatusDot.className = "dot warning";
+        gwStatusText.innerText = "Reading parameters...";
+        gwStatusText.style.color = "#f59e0b";
+
         await gwPipe.sendJson({ cmd: "get_gw_config" });
       } catch (err) {
         log(`Connection error: ${err.message}`, "error");
@@ -623,6 +658,11 @@
         document.getElementById('lora_chip').value = json.lora_chip || 2;
         document.getElementById('aes_key').value = json.aes_key;
         document.getElementById('tx_interval').value = json.tx_interval;
+
+        document.getElementById('node-loading-banner').classList.add('hidden');
+        statusDot.className = "dot";
+        statusText.innerText = "Connected";
+        statusText.style.color = "#10b981";
       } else if (json.status === 'saved') {
         alert("Configuration saved! The node will reboot.");
       } else if (json.status === 'reseted') {
@@ -640,6 +680,7 @@
       statusText.innerText = "Disconnected";
       statusText.style.color = "#ef4444";
       btnConnect.innerText = "Connect to Node";
+      document.getElementById('node-loading-banner').classList.add('hidden');
       configForm.classList.add('hidden');
       resetOtaUi();
     });
@@ -654,11 +695,14 @@
         statusText.innerText = "Searching...";
         statusText.style.color = "#f59e0b";
         await pipe.connect("ESP32-LoRa");
-        statusDot.className = "dot";
-        statusText.innerText = "Connected";
-        statusText.style.color = "#10b981";
         btnConnect.innerText = "Disconnect";
         configForm.classList.remove('hidden');
+
+        document.getElementById('node-loading-banner').classList.remove('hidden');
+        statusDot.className = "dot warning";
+        statusText.innerText = "Reading parameters...";
+        statusText.style.color = "#f59e0b";
+
         await pipe.sendJson({ cmd: "get_config" });
       } catch (err) {
         log(`Connection error: ${err.message}`, "error");

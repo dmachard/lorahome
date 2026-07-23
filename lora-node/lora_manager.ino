@@ -75,8 +75,12 @@ void startLoRaMode() {
   if (ina_detected) {
     ina = new INA226(ina_addr);
     if (ina->begin()) {
-      ina->setMaxCurrentShunt(3.6, 0.1); // Calibration for 0.1 Ohm shunt resistor (R100) up to 3.6A
-      Serial.println("INA226 sensor initialized successfully!");
+      int cal_err = ina->setMaxCurrentShunt(0.8, 0.1); // 0.1 Ohm (R100) shunt, max 0.8A (81.92mV max shunt voltage)
+      if (cal_err != 0) {
+        Serial.printf("INA226 calibration failed with error code: 0x%04X\n", cal_err);
+      } else {
+        Serial.println("INA226 sensor initialized and calibrated successfully!");
+      }
     } else {
       Serial.println("INA226 initialization failed!");
       ina_detected = false;
@@ -207,14 +211,27 @@ void loopLoRa() {
     }
   }
 
-  // 5. Read INA226 (Battery Voltage)
+  // 5. Read INA226 (Voltage, Current, Power)
   if (ina_detected && ina != nullptr) {
     float v = ina->getBusVoltage(); // Voltage in Volts
-    Serial.printf("INA226: Voltage=%.3fV\n", v);
+    float sv = ina->getShuntVoltage_mV(); // Shunt voltage in mV
+    float c = sv / 0.1f; // Direct calculation: I (mA) = V_shunt (mV) / R_shunt (0.1 Ohm)
+    float p = v * c;     // Direct calculation: P (mW) = V (V) * I (mA)
+    Serial.printf("INA226: Voltage=%.3fV | Shunt=%.3fmV | Current=%.1fmA | Power=%.1fmW\n", v, sv, c, p);
 
     if (payload.count < 10) {
       payload.readings[payload.count].type = TYPE_INA226_VOLT;
       payload.readings[payload.count].value = (int32_t)(v * 1000.0f); // stored in mV (scale = 0.001 -> V)
+      payload.count++;
+    }
+    if (payload.count < 10) {
+      payload.readings[payload.count].type = TYPE_INA226_CURR;
+      payload.readings[payload.count].value = (int32_t)(c * 10.0f); // stored in 0.1 mA resolution (scale = 0.1 -> mA)
+      payload.count++;
+    }
+    if (payload.count < 10) {
+      payload.readings[payload.count].type = TYPE_INA226_POWER;
+      payload.readings[payload.count].value = (int32_t)(p * 10.0f); // stored in 0.1 mW resolution (scale = 0.1 -> mW)
       payload.count++;
     }
   }

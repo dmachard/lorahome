@@ -318,6 +318,18 @@
             });
           }
 
+          const lostCount = node.packets_lost || 0;
+          const totalPackets = (node.packets_count || 0) + lostCount;
+          const lossPercent = totalPackets > 0 ? (lostCount * 100) / totalPackets : 0;
+          const lossPercentStr = lossPercent.toFixed(1).replace('.', ',');
+
+          let lossColor = '#34d399'; // 🟢 < 1%
+          if (lossPercent > 5) {
+            lossColor = '#ef4444'; // 🔴 > 5%
+          } else if (lossPercent >= 1) {
+            lossColor = '#fbbf24'; // 🟡 1–5%
+          }
+
           const cardInnerHtml = `
               <div class="node-header">
                 <div class="node-title-group">
@@ -342,7 +354,7 @@
                 </div>
                 <div class="node-footer-right">
                   <div class="footer-metric right-aligned">
-                    <span>Lost: <b style="color: ${node.packets_lost > 0 ? '#ef4444' : '#34d399'}">${node.packets_lost || 0}</b></span>
+                    <span>Lost: <b style="color: ${lossColor}">${lostCount} (${lossPercentStr} %)</b></span>
                     <span class="stat-divider">·</span>
                     <span>Rbts: <b style="color: ${node.reboots > 0 ? '#fbbf24' : '#64748b'}">${node.reboots}</b></span>
                   </div>

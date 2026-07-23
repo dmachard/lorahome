@@ -784,3 +784,32 @@ input[type="file"] {
   color: #38bdf8;
 }
 
+/* Loading Banner & Spinner */
+.loading-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: #38bdf8;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.spinner-icon {
+  width: 20px;
+  height: 20px;
+  animation: spin-anim 1.2s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

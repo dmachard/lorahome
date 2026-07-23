@@ -214,8 +214,10 @@ void updateDisplay() {
         det_items[det_count++] = "Seen: " + String(elapsed_sec / 60) + "m ago";
       }
 
-      // Lost packets and total packets
-      det_items[det_count++] = "Lost: " + String(n.packets_lost);
+      // Lost packets and percentage
+      uint32_t total_pkts = n.packets_count + n.packets_lost;
+      float loss_pct = total_pkts > 0 ? (n.packets_lost * 100.0f) / total_pkts : 0.0f;
+      det_items[det_count++] = "Lost: " + String(n.packets_lost) + " (" + String(loss_pct, 1) + "%)";
       det_items[det_count++] = "Packets: " + String(n.packets_count);
 
       // Human-readable reset reason

@@ -122,6 +122,9 @@ void handleNodesJson() {
     // Hide inactive nodes for more than 5 minutes
     if (now - nodes[i].last_seen_ms > 300000UL) continue;
 
+    uint32_t total_pkts = nodes[i].packets_count + nodes[i].packets_lost;
+    float loss_pct = total_pkts > 0 ? (nodes[i].packets_lost * 100.0f) / total_pkts : 0.0f;
+
     JsonObject node = nodes_arr.add<JsonObject>();
     node["id"]               = i;
     node["name"]             = nodes[i].name;
@@ -131,6 +134,7 @@ void handleNodesJson() {
     node["reboots"]          = nodes[i].reboots;
     node["packets_count"]    = nodes[i].packets_count;
     node["packets_lost"]     = nodes[i].packets_lost;
+    node["loss_percent"]     = loss_pct;
     node["last_reset_reason"]= nodes[i].last_reset_reason;
     node["last_error_code"]  = nodes[i].last_error_code;
     node["tx_interval"]      = nodes[i].tx_interval;

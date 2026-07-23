@@ -10,7 +10,9 @@ enum ReadingType {
   TYPE_BMP280_PRES = 6,
   TYPE_TSL2561_LUX = 7,
   TYPE_SCD40_CO2   = 9,
-  TYPE_INA226_VOLT = 10
+  TYPE_INA226_VOLT = 10,
+  TYPE_INA226_CURR = 11,
+  TYPE_INA226_POWER = 12
 };
 
 struct SensorReading {
@@ -44,6 +46,8 @@ inline ReadingTypeDefinition getReadingDefinition(uint8_t type) {
     case TYPE_TSL2561_LUX: return {7, "light_lux", "Light", "lux", 1.0f};
     case TYPE_SCD40_CO2:   return {9, "co2_ppm", "CO2", "ppm", 1.0f};
     case TYPE_INA226_VOLT: return {10, "bus_voltage_volts", "Voltage", "V", 0.001f};
+    case TYPE_INA226_CURR: return {11, "bus_current_ma", "Current", "mA", 0.1f};
+    case TYPE_INA226_POWER:return {12, "bus_power_mw", "Power", "mW", 0.1f};
     default:               return {type, "unknown_raw", "Unk", "", 1.0f};
   }
 }
